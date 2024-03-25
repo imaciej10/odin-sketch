@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>Etch-a-sketch game</title>
+    <script>
+      document.addEventListener("DOMContentLoaded", function (event) {
+        const container = document.querySelector("div.container");
+        const gridBtn = document.querySelector("button#size");
+        const resetBtn = document.querySelector("button#reset");
+        const eraseBtn = document.querySelector("button#erase");
+        let defaultColor = "rgb(201, 189, 189)";
+
+        function createGrid(gridSize) {
+          for (i = 0; i < gridSize ** 2; i++) {
+            const square = document.createElement("div");
+            square.classList.add("square");
+            square.style.width = calculateSquareSize(gridSize);
+            square.style.height = calculateSquareSize(gridSize);
+            container.append(square);
+          }
+        }
+
+        function calculateSquareSize(squares) {
+          return 500 / squares + "px";
+        }
+
+        function getRandomNumber(min, max) {
+          return Math.floor(Math.random() * (max - min) + min);
+        }
+
+        function styleSquares(elem) {
+          elem.style.backgroundColor =
+            "rgb(" +
+            getRandomNumber(0, 255) +
+            ", " +
+            getRandomNumber(0, 255) +
+            ", " +
+            getRandomNumber(0, 255) +
+            ")";
+        }
+
+        function rgbToHsl(rgbColor) {
+          var rgb = rgbColor
+            .substring(4, rgbColor.length - 1)
+            .split(", ")
+            .map(function (value) {
+              return parseInt(value) / 255;
+            });
+
+          var r = rgb[0],
+            g = rgb[1],
+            b = rgb[2];
+          var max = Math.max(r, g, b),
+            min = Math.min(r, g, b);
+          var h,
+            s,
+            l = (max + min) / 2;
+
+          if (max == min) {
+            h = s = 0; // achromatic
+          } else {
+            var d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch (max) {
+              case r:
+                h = (g - b) / d + (g < b ? 6 : 0);
+                break;
+              case g:
+                h = (b - r) / d + 2;
+                break;
+              case b:
+                h = (r - g) / d + 4;
+                break;
+            }
+            h /= 6;
+          }
+
+          return [h * 360, s * 100, l * 100];
+        }
+
+        function darkenSquare(elem, percent) {
+          let color = elem.style.backgroundColor;
+          var hslColor = rgbToHsl(color);
+          var newLightness = hslColor[2] * (1 - percent / 100);
+          elem.style.backgroundColor =
+            "hsl(" +
+            hslColor[0] +
+            ", " +
+            hslColor[1] +
+            "%, " +
+            newLightness +
+            "%)";
+        }
+
+        gridBtn.addEventListener("click", () => {
+          let gridSize;
+
+          do {
+            gridSize = +prompt("Enter size from 1 to 100");
+            if (gridSize === 0) {
+              break;
+            }
+          } while (isNaN(gridSize) || gridSize <= 0 || gridSize > 100);
+
+          squares = document.querySelectorAll("div.square");
+          squares.forEach((square) => {
+            container.removeChild(square);
+          });
+
+          createGrid(gridSize);
+          squares = document.querySelectorAll("div.square");
+          squares.forEach((square) => {
+            square.addEventListener("mouseenter", () => {
+              if (
+                !square.style.backgroundColor ||
+                square.style.backgroundColor === defaultColor
+              ) {
+                styleSquares(square);
+              } else {
+                darkenSquare(square, 8);
+              }
+            });
+          });
+        });
+
+        resetBtn.addEventListener("click", () => {
+          squares = document.querySelectorAll("div.square");
+
+          squares.forEach((square) => {
+            square.style.backgroundColor = "rgb(201, 189, 189)";
+          });
+        });
+
+        eraseBtn.addEventListener("click", () => {
+          squares = document.querySelectorAll("div.square");
+          squares.forEach((square) => {
+            square.addEventListener("mouseenter", () => {
+              square.style.backgroundColor = defaultColor;
+            });
+          });
+        });
+
+        let gridSize = 10;
+        console.log(calculateSquareSize(gridSize));
+        createGrid(gridSize);
+        let squares = document.querySelectorAll("div.square");
+
+        squares.forEach((square) => {
+          square.addEventListener("mouseenter", () => {
+            if (
+              !square.style.backgroundColor ||
+              square.style.backgroundColor === defaultColor
+            ) {
+              styleSquares(square);
+            } else {
+              darkenSquare(square, 10);
+            }
+          });
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div id="title">Etch a sketch</div>
+    <div id="buttoncontainer">
+      <button id="size">Choose size</button>
+      <button id="reset">Reset grid</button>
+      <button id="erase">Eraser</button>
+    </div>
+    <div class="container"></div>
+  </body>
+</html>
